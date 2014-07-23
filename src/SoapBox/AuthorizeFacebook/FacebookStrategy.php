@@ -101,7 +101,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	}
 
 	/**
-	 * Used to retrieve the social network from the strategy.
+	 * Used to retrieve the friends of this user that are also using this app
 	 *
 	 * @param array parameters The parameters required to authenticate against
 	 *	this strategy. (i.e. accessToken)
@@ -117,7 +117,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 		}
 
 		$session = new FacebookSession($parameters['accessToken']);
-		$request = (new FacebookRequest($session, 'GET', '/friends'))->execute();
+		$request = (new FacebookRequest($session, 'GET', '/me/friends'))->execute();
 
 		return $request->getGraphObject();
 	}
