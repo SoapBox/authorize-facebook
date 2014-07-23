@@ -1,6 +1,7 @@
 <?php namespace SoapBox\AuthorizeFacebook;
 
 use Illuminate\Support\ServiceProvider;
+use SoapBox\Authorize\StrategyFactory;
 
 class AuthorizeFacebookServiceProvider extends ServiceProvider {
 
@@ -28,7 +29,7 @@ class AuthorizeFacebookServiceProvider extends ServiceProvider {
 	 */
 	public function register()
 	{
-		//
+		StrategyFactory::register('facebook', 'SoapBox\AuthorizeFacebook\FacebookStrategy');
 	}
 
 	/**

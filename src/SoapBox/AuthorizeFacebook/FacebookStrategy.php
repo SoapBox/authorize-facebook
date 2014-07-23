@@ -6,8 +6,9 @@ use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\Exceptions\AuthenticationException;
+use SoapBox\Authorize\Strategies\SingleSignOnStrategy;
 
-class FacebookStrategy {
+class FacebookStrategy extends SingleSignOnStrategy {
 
 	/**
 	 * Initializes the FacebookSession with our id and secret
