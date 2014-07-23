@@ -4,6 +4,7 @@ use Facebook\FacebookSession;
 use Facebook\FacebookRequest;
 use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
+use Facebook\FacebookRedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\Exceptions\AuthenticationException;
 use SoapBox\Authorize\Strategies\SingleSignOnStrategy;
@@ -11,16 +12,32 @@ use SoapBox\Authorize\Strategies\SingleSignOnStrategy;
 class FacebookStrategy extends SingleSignOnStrategy {
 
 	/**
+	 * The url to redirect the user to after they have granted permissions on
+	 * facebook.
+	 */
+	private $redirectUrl = '';
+
+	/**
+	 * An array of the permissions we require for the application.
+	 */
+	private $scope = array('email');
+
+	/**
 	 * Initializes the FacebookSession with our id and secret
 	 *
 	 * @param array $settings array('id' => string, 'secret' => string)
 	 */
 	public function __construct($settings = array()) {
-		if (!isset($settings['id']) || !isset($settings['secret'])) {
-			throw new Exception(
-				'Both id and secret are required to use the facebook login. (http://developers.facebook.com/apps)'
+		session_start();
+		if (!isset($settings['id']) || !isset($settings['secret']) || !isset($settings['redirect_url'])) {
+			throw new \Exception(
+				'redirect_url, id, and secret are required to use the facebook login. (http://developers.facebook.com/apps)'
 			);
 		}
+		if (isset($settings['scope'])) {
+			$this->scope = array_merge($this->scope, $settings['scope']);
+		}
+		$this->redirectUrl = $settings['redirect_url'];
 		FacebookSession::setDefaultApplication($settings['id'], $settings['secret']);
 	}
 
@@ -36,16 +53,18 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 * @return User A mixed array repreesnting the authenticated user.
 	 */
 	public function login($parameters = array()) {
-		if (!isset($parameters['access_token']) && !isset($parameters['redirect_url'])) {
-			throw new Exception('You must provide either an access_token or redirect_url');
-		}
-		if (isset($parameters['redirect_url'])) {
-			$helper = new FacebookRedirectLoginHelper($parameters['redirect_url']);
-			$loginUrl = $helper->getLoginUrl();
-			Helpers::redirect($loginUrl);
+		$helper = new FacebookRedirectLoginHelper($this->redirectUrl);
+
+		if(isset($parameters['access_token'])) {
+			$session = new FacebookSession($parameters['access_token']);
+		} else {
+			$session = $helper->getSessionFromRedirect();
 		}
 
-		$session = new FacebookSession($parameters['access_token']);
+		if (!isset($session)) {
+			Helpers::redirect($helper->getLoginUrl($this->scope));
+		}
+
 		$request = (new FacebookRequest($session, 'GET', '/me'))->execute();
 		return $request->getGraphObject();
 	}
@@ -58,17 +77,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *	validate our user.
 	 */
 	public function endpoint() {
-		$helper = new FacebookRedirectLoginHelper();
-
-		try {
-			return $helper->getSessionFromRedirect();
-		} catch (FacebookRequestException $ex) {
-			throw new AuthenticationException();
-		} catch (\Exception $ex) {
-			throw new AuthenticationException();
-		}
-
-		throw new AuthenicationException();
+		return $this->login();
 	}
 
 }
