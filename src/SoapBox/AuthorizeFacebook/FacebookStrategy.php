@@ -21,7 +21,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	/**
 	 * An array of the permissions we require for the application.
 	 */
-	private $scope = array('email');
+	private $scope = array('email', 'user_friends');
 
 	/**
 	 * Initializes the FacebookSession with our id and secret
@@ -66,17 +66,60 @@ class FacebookStrategy extends SingleSignOnStrategy {
 			Helpers::redirect($helper->getLoginUrl($this->scope));
 		}
 
+		return $this->getUser(['accessToken' => $session->getToken()]);
+	}
+
+	/**
+	 * Used to retrieve the user from the strategy.
+	 *
+	 * @param array parameters The parameters required to authenticate against
+	 *	this strategy. (i.e. accessToken)
+	 *
+	 * @throws AuthenticationException If the provided parameters do not
+	 *	successfully authenticate.
+	 *
+	 * @return User A mixed array representing the authenticated user.
+	 */
+	public function getUser($parameters = array()) {
+		if (!isset($parameters['accessToken'])) {
+			throw new AuthenticationException();
+		}
+
+		$session = new FacebookSession($parameters['accessToken']);
+
 		$request = (new FacebookRequest($session, 'GET', '/me'))->execute();
 		$response = $request->getGraphObject();
 
 		$user = new User;
 		$user->id = $response->getProperty('id');
 		$user->email = $response->getProperty('email');
-		$user->accessToken = $session->getToken();
+		$user->accessToken = $parameters['accessToken'];
 		$user->firstname = $response->getProperty('first_name');
 		$user->lastname = $response->getProperty('last_name');
 
 		return $user;
+	}
+
+	/**
+	 * Used to retrieve the social network from the strategy.
+	 *
+	 * @param array parameters The parameters required to authenticate against
+	 *	this strategy. (i.e. accessToken)
+	 *
+	 * @throws AuthenticationException If the provided parameters do not
+	 *	successfully authenticate.
+	 *
+	 * @return array A list of userId's that are friends of this user.
+	 */
+	public function getFriends($parameters = array()) {
+		if (!isset($parameters['accessToken'])) {
+			throw new AuthenticationException();
+		}
+
+		$session = new FacebookSession($parameters['accessToken']);
+		$request = (new FacebookRequest($session, 'GET', '/friends'))->execute();
+
+		return $request->getGraphObject();
 	}
 
 	/**
