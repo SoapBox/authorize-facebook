@@ -6,6 +6,7 @@ use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
 use Facebook\FacebookRedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
+use SoapBox\Authorize\User;
 use SoapBox\Authorize\Exceptions\AuthenticationException;
 use SoapBox\Authorize\Strategies\SingleSignOnStrategy;
 
@@ -66,7 +67,16 @@ class FacebookStrategy extends SingleSignOnStrategy {
 		}
 
 		$request = (new FacebookRequest($session, 'GET', '/me'))->execute();
-		return $request->getGraphObject();
+		$response = $request->getGraphObject();
+
+		$user = new User;
+		$user->id = $response->getProperty('id');
+		$user->email = $response->getProperty('email');
+		$user->accessToken = $session->getToken();
+		$user->firstname = $response->getProperty('first_name');
+		$user->lastname = $response->getProperty('last_name');
+
+		return $user;
 	}
 
 	/**
