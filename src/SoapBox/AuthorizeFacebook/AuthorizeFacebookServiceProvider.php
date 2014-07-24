@@ -19,7 +19,7 @@ class AuthorizeFacebookServiceProvider extends ServiceProvider {
 	 */
 	public function boot()
 	{
-		$this->package('soap-box/authorize-facebook');
+		$this->package('soapbox/authorize-facebook');
 	}
 
 	/**
