@@ -7,6 +7,7 @@ use Facebook\FacebookRequestException;
 use Facebook\FacebookRedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\User;
+use SoapBox\Authorize\Contact;
 use SoapBox\Authorize\Exceptions\AuthenticationException;
 use SoapBox\Authorize\Strategies\SingleSignOnStrategy;
 
@@ -117,9 +118,20 @@ class FacebookStrategy extends SingleSignOnStrategy {
 		}
 
 		$session = new FacebookSession($parameters['accessToken']);
+		//change this to me/taggable_friends if you want all friends (will require facebook to verify your app)
 		$request = (new FacebookRequest($session, 'GET', '/me/friends'))->execute();
 
-		return $request->getGraphObject();
+		$friends = [];
+
+		foreach ($request->getGraphObject()->getProperty('data')->asArray() as $data) {
+			$friend = new Contact;
+			$friend->id = $data->id;
+			$friend->displayName = $data->name;
+			$friend->displayPicture = $data->picture->data->url;
+			$friends[] = $friend;
+		}
+
+		return $friends;
 	}
 
 	/**
