@@ -141,8 +141,8 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 * @return array Mixed array of the tokens and other components that
 	 *	validate our user.
 	 */
-	public function endpoint() {
-		return $this->login();
+	public function endpoint($parameters = array()) {
+		return $this->login($parameters);
 	}
 
 }
