@@ -4,7 +4,7 @@ use Facebook\FacebookSession;
 use Facebook\FacebookRequest;
 use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
-use Facebook\FacebookRedirectLoginHelper;
+use SoapBox\AuthorizeFacebook\RedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\User;
 use SoapBox\Authorize\Contact;
