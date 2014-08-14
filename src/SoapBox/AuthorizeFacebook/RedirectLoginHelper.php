@@ -1,7 +1,6 @@
 <?php namespace SoapBox\AuthorizeFacebook;
 
 use Facebook\FacebookRedirectLoginHelper;
-use SoapBox\AuthroizeFacebook\FacebookStrategy;
 
 class RedirectLoginHelper extends FacebookRedirectLoginHelper {
 
