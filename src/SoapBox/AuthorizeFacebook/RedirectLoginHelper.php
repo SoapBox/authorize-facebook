@@ -7,8 +7,9 @@ class RedirectLoginHelper extends FacebookRedirectLoginHelper {
 	protected function storeState($state) {
 		if (FacebookStrategy::$store == null) {
 			parent::storeState($state);
+		} else {
+			FacebookStrategy::$store('facebook.state', $state);
 		}
-		FacebookStrategy::$store('facebook.state', $state);
 	}
 
 	protected function loadState() {
