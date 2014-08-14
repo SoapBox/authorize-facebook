@@ -10,7 +10,7 @@ class RedirectLoginHelper extends FacebookRedirectLoginHelper {
 		if ($store == null) {
 			parent::storeState($state);
 		} else {
-			$store('facebook.state', $state);
+			$store('facebook.state', $state, true);
 		}
 	}
 
