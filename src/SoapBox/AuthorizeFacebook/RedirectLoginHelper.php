@@ -5,18 +5,22 @@ use Facebook\FacebookRedirectLoginHelper;
 class RedirectLoginHelper extends FacebookRedirectLoginHelper {
 
 	protected function storeState($state) {
-		if (FacebookStrategy::$store == null) {
+		$store = FacebookStrategy::$store;
+
+		if ($store == null) {
 			parent::storeState($state);
 		} else {
-			FacebookStrategy::$store('facebook.state', $state);
+			$store('facebook.state', $state);
 		}
 	}
 
 	protected function loadState() {
-		if (FacebookStrategy::$load == null) {
+		$load = FacebookStrategy::$load;
+
+		if ($load == null) {
 			return parent::loadState();
 		}
-		return $this->state = FacebookStrategy::$load('facebook.state');
+		return $this->state = $load('facebook.state');
 	}
 
 }
