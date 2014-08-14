@@ -25,11 +25,24 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	private $scope = array('email', 'user_friends');
 
 	/**
+	 * Callable store method
+	 */
+	private $store = null;
+
+	/**
+	 * Callable load method
+	 */
+	private $load = null;
+
+	/**
 	 * Initializes the FacebookSession with our id and secret
 	 *
 	 * @param array $settings array('id' => string, 'secret' => string)
+	 * @param callable $store A callback that will store a KVP (Key Value Pair).
+	 * @param callable $load A callback that will return a value stored with the
+	 *	provided key.
 	 */
-	public function __construct($settings = array()) {
+	public function __construct($settings = array(), $store = null, $load = null) {
 		session_start();
 		if (!isset($settings['id']) || !isset($settings['secret']) || !isset($settings['redirect_url'])) {
 			throw new \Exception(
@@ -40,6 +53,8 @@ class FacebookStrategy extends SingleSignOnStrategy {
 			$this->scope = array_merge($this->scope, $settings['scope']);
 		}
 		$this->redirectUrl = $settings['redirect_url'];
+		$this->store = $store;
+		$this->load = $load;
 		FacebookSession::setDefaultApplication($settings['id'], $settings['secret']);
 	}
 
