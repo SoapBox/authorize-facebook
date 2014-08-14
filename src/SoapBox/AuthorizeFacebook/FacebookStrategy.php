@@ -4,7 +4,7 @@ use Facebook\FacebookSession;
 use Facebook\FacebookRequest;
 use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
-use Facebook\FacebookRedirectLoginHelper;
+use Soapbox\AuthorizeFacebook\RedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\User;
 use SoapBox\Authorize\Contact;
@@ -25,12 +25,24 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	private $scope = array('email', 'user_friends');
 
 	/**
+	 * Callable store method
+	 */
+	public static $store = null;
+
+	/**
+	 * Callable load method
+	 */
+	public static $load = null;
+
+	/**
 	 * Initializes the FacebookSession with our id and secret
 	 *
 	 * @param array $settings array('id' => string, 'secret' => string)
+	 * @param callable $store A callback that will store a KVP (Key Value Pair).
+	 * @param callable $load A callback that will return a value stored with the
+	 *	provided key.
 	 */
-	public function __construct($settings = array()) {
-		session_start();
+	public function __construct($settings = array(), $store = null, $load = null) {
 		if (!isset($settings['id']) || !isset($settings['secret']) || !isset($settings['redirect_url'])) {
 			throw new \Exception(
 				'redirect_url, id, and secret are required to use the facebook login. (http://developers.facebook.com/apps)'
@@ -40,6 +52,14 @@ class FacebookStrategy extends SingleSignOnStrategy {
 			$this->scope = array_merge($this->scope, $settings['scope']);
 		}
 		$this->redirectUrl = $settings['redirect_url'];
+
+		if ($store != null && $load != null) {
+			FacebookStrategy::$store = $store;
+			FacebookStrategy::$load = $load;
+		} else {
+			session_start();
+		}
+
 		FacebookSession::setDefaultApplication($settings['id'], $settings['secret']);
 	}
 
@@ -55,7 +75,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 * @return User A mixed array repreesnting the authenticated user.
 	 */
 	public function login($parameters = array()) {
-		$helper = new FacebookRedirectLoginHelper($this->redirectUrl);
+		$helper = new RedirectLoginHelper($this->redirectUrl);
 
 		if(isset($parameters['access_token'])) {
 			$session = new FacebookSession($parameters['access_token']);
