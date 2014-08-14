@@ -4,7 +4,7 @@ use Facebook\FacebookSession;
 use Facebook\FacebookRequest;
 use Facebook\GraphUser;
 use Facebook\FacebookRequestException;
-use Facebook\FacebookRedirectLoginHelper;
+use Soapbox\AuthorizeFacebook\RedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\User;
 use SoapBox\Authorize\Contact;
@@ -27,12 +27,12 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	/**
 	 * Callable store method
 	 */
-	private $store = null;
+	public static $store = null;
 
 	/**
 	 * Callable load method
 	 */
-	private $load = null;
+	public static $load = null;
 
 	/**
 	 * Initializes the FacebookSession with our id and secret
@@ -43,7 +43,6 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *	provided key.
 	 */
 	public function __construct($settings = array(), $store = null, $load = null) {
-		session_start();
 		if (!isset($settings['id']) || !isset($settings['secret']) || !isset($settings['redirect_url'])) {
 			throw new \Exception(
 				'redirect_url, id, and secret are required to use the facebook login. (http://developers.facebook.com/apps)'
@@ -53,8 +52,14 @@ class FacebookStrategy extends SingleSignOnStrategy {
 			$this->scope = array_merge($this->scope, $settings['scope']);
 		}
 		$this->redirectUrl = $settings['redirect_url'];
-		$this->store = $store;
-		$this->load = $load;
+
+		if ($store != null && $load != null) {
+			FacebookStrategy::$store = $store;
+			FacebookStrategy::$load = $load;
+		} else {
+			session_start();
+		}
+
 		FacebookSession::setDefaultApplication($settings['id'], $settings['secret']);
 	}
 
@@ -70,7 +75,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 * @return User A mixed array repreesnting the authenticated user.
 	 */
 	public function login($parameters = array()) {
-		$helper = new FacebookRedirectLoginHelper($this->redirectUrl);
+		$helper = new RedirectLoginHelper($this->redirectUrl);
 
 		if(isset($parameters['access_token'])) {
 			$session = new FacebookSession($parameters['access_token']);
