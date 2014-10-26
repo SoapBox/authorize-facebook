@@ -10,7 +10,7 @@ class AuthorizeFacebookServiceProvider extends ServiceProvider {
 	 *
 	 * @var bool
 	 */
-	protected $defer = false;
+	protected $defer = true;
 
 	/**
 	 * Bootstrap the application events.
@@ -27,9 +27,11 @@ class AuthorizeFacebookServiceProvider extends ServiceProvider {
 	 *
 	 * @return void
 	 */
-	public function register()
-	{
-		StrategyFactory::register('facebook', 'SoapBox\AuthorizeFacebook\FacebookStrategy');
+	public function register() {
+		$this->app->bind(
+			'soapbox.authorize.facebook',
+			'SoapBox\AuthorizeFacebook\FacebookStrategy'
+		);
 	}
 
 	/**
@@ -37,9 +39,8 @@ class AuthorizeFacebookServiceProvider extends ServiceProvider {
 	 *
 	 * @return array
 	 */
-	public function provides()
-	{
-		return array();
+	public function provides() {
+		return ['soapbox.authorize.facebook'];
 	}
 
 }
