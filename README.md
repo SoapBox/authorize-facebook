@@ -12,7 +12,7 @@ Add the following to your `composer.json`
 ```
 "require": {
 	...
-	"soapbox/authorize-facebook": "dev-master",
+	"soapbox/authorize-facebook": "1.*",
 	...
 }
 ```
@@ -48,7 +48,7 @@ $parameters = ['accessToken' => 'sometoken'];
 
 $strategy = new Authenticator('facebook', $settings);
 
-$user = $strategy->authenticate($parameters);
+$bool = $strategy->authenticate($parameters);
 
 ```
 
@@ -65,6 +65,6 @@ $settings = [
 ];
 
 $strategy = new Authenticator('facebook', $settings);
-$user = $strategy->endpoint();
+$user = $strategy->getUser();
 
 ```
