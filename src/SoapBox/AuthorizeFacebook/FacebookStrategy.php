@@ -42,23 +42,21 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 * @param callable $load A callback that will return a value stored with the
 	 *	provided key.
 	 */
-	public function __construct($settings = array(), $store = null, $load = null) {
+	public function __construct($settings = []) {
 		if (!isset($settings['id']) || !isset($settings['secret']) || !isset($settings['redirect_url'])) {
 			throw new \Exception(
 				'redirect_url, id, and secret are required to use the facebook login. (http://developers.facebook.com/apps)'
 			);
 		}
+
 		if (isset($settings['scope'])) {
 			$this->scope = array_merge($this->scope, $settings['scope']);
 		}
-		$this->redirectUrl = $settings['redirect_url'];
 
-		if ($store != null && $load != null) {
-			FacebookStrategy::$store = $store;
-			FacebookStrategy::$load = $load;
-		} else {
-			session_start();
-		}
+		FacebookStrategy::$store = Helper::$store;
+		FacebookStrategy::$load = Helper::$load;
+
+		$this->redirectUrl = $settings['redirect_url'];
 
 		FacebookSession::setDefaultApplication($settings['id'], $settings['secret']);
 	}
@@ -68,13 +66,12 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *
 	 * @param array parameters array('access_token' => string,
 	 *	'redirect_url' => string)
+	 * @param Closure $store Closure to handle the storage of session data
+	 * @param Closure $redirect Closure to handle the redirection of a user to the cas Auth site
 	 *
-	 * @throws AuthenticationException If the provided parameters do not
-	 *	successfully authenticate.
-	 *
-	 * @return User A mixed array repreesnting the authenticated user.
+	 * @return bool True if the session is logged in, redirect otherwise
 	 */
-	public function login($parameters = array()) {
+	public function login($parameters = []) {
 		$helper = new RedirectLoginHelper($this->redirectUrl);
 
 		if(isset($parameters['access_token'])) {
@@ -87,7 +84,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 			Helpers::redirect($helper->getLoginUrl($this->scope));
 		}
 
-		return $this->getUser(['accessToken' => $session->getToken()]);
+		return true;
 	}
 
 	/**
@@ -101,7 +98,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *
 	 * @return User A mixed array representing the authenticated user.
 	 */
-	public function getUser($parameters = array()) {
+	public function getUser($parameters = []) {
 		if (!isset($parameters['accessToken'])) {
 			throw new AuthenticationException();
 		}
@@ -152,17 +149,6 @@ class FacebookStrategy extends SingleSignOnStrategy {
 		}
 
 		return $friends;
-	}
-
-	/**
-	 * Used to handle tasks after login. This could include retrieving our users
-	 * token after a successful authentication.
-	 *
-	 * @return array Mixed array of the tokens and other components that
-	 *	validate our user.
-	 */
-	public function endpoint($parameters = array()) {
-		return $this->login($parameters);
 	}
 
 }
