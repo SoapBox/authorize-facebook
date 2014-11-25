@@ -4,23 +4,25 @@ use Facebook\FacebookRedirectLoginHelper;
 
 class RedirectLoginHelper extends FacebookRedirectLoginHelper {
 
-	protected function storeState($state) {
-		$store = FacebookStrategy::$store;
+	private $session;
+	private $router;
 
-		if ($store == null) {
-			parent::storeState($state);
-		} else {
-			$store('facebook.state', $state, true);
-		}
+	public function __construct($url, Session $session, Router $router) {
+		$this->session = $session;
+		$this->router = $router;
+		parent::construct($url);
+	}
+
+	protected function storeState($state) {
+		$this->session->put('facebook.state', $state);
 	}
 
 	protected function loadState() {
-		$load = FacebookStrategy::$load;
+		return $this->state = $this->session->get('facebook.state');
+	}
 
-		if ($load == null) {
-			return parent::loadState();
-		}
-		return $this->state = $load('facebook.state');
+	public function redirect($scope) {
+		$this->router->redirect($this->getLoginUrl($scope));
 	}
 
 }

@@ -25,14 +25,19 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	private $scope = array('email', 'user_friends');
 
 	/**
-	 * Callable store method
+	 * The session that can be used to store session data between
+	 * requests / redirects
+	 *
+	 * @var Session
 	 */
-	public static $store = null;
+	private $session;
 
 	/**
-	 * Callable load method
+	 * The router that can be used to redirect the user between views
+	 *
+	 * @var Router
 	 */
-	public static $load = null;
+	private $router;
 
 	/**
 	 * Initializes the FacebookSession with our id and secret
@@ -42,7 +47,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 * @param callable $load A callback that will return a value stored with the
 	 *	provided key.
 	 */
-	public function __construct($settings = []) {
+	public function __construct(array $settings = [], Session $session, Router $router) {
 		if (!isset($settings['id']) || !isset($settings['secret']) || !isset($settings['redirect_url'])) {
 			throw new \Exception(
 				'redirect_url, id, and secret are required to use the facebook login. (http://developers.facebook.com/apps)'
@@ -53,8 +58,8 @@ class FacebookStrategy extends SingleSignOnStrategy {
 			$this->scope = array_merge($this->scope, $settings['scope']);
 		}
 
-		FacebookStrategy::$store = Helper::$store;
-		FacebookStrategy::$load = Helper::$load;
+		$this->session = $session;
+		$this->router = $router;
 
 		$this->redirectUrl = $settings['redirect_url'];
 
@@ -71,8 +76,8 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *
 	 * @return bool True if the session is logged in, redirect otherwise
 	 */
-	public function login($parameters = []) {
-		$helper = new RedirectLoginHelper($this->redirectUrl);
+	public function login(array $parameters = []) {
+		$helper = new RedirectLoginHelper($this->session, $this->router);
 
 		if(isset($parameters['access_token'])) {
 			$session = new FacebookSession($parameters['access_token']);
@@ -81,7 +86,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 		}
 
 		if (!isset($session)) {
-			Helpers::redirect($helper->getLoginUrl($this->scope));
+			$helper->redirect($this->scope);
 		}
 
 		return true;
@@ -98,7 +103,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *
 	 * @return User A mixed array representing the authenticated user.
 	 */
-	public function getUser($parameters = []) {
+	public function getUser(array $parameters = []) {
 		if (!isset($parameters['accessToken'])) {
 			throw new AuthenticationException();
 		}
@@ -129,7 +134,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 	 *
 	 * @return array A list of userId's that are friends of this user.
 	 */
-	public function getFriends($parameters = array()) {
+	public function getFriends(array $parameters = []) {
 		if (!isset($parameters['accessToken'])) {
 			throw new AuthenticationException();
 		}
