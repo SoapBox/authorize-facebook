@@ -7,6 +7,8 @@ use Facebook\FacebookRequestException;
 use SoapBox\AuthorizeFacebook\RedirectLoginHelper;
 use SoapBox\Authorize\Helpers;
 use SoapBox\Authorize\User;
+use SoapBox\Authorize\Session;
+use SoapBox\Authorize\Router;
 use SoapBox\Authorize\Contact;
 use SoapBox\Authorize\Exceptions\AuthenticationException;
 use SoapBox\Authorize\Strategies\SingleSignOnStrategy;
