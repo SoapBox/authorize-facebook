@@ -108,7 +108,7 @@ class FacebookStrategy extends SingleSignOnStrategy {
 
 		$session = new FacebookSession($parameters['accessToken']);
 
-		$request = (new FacebookRequest($session, 'GET', '/me'))->execute();
+		$request = (new FacebookRequest($session, 'GET', '/me?fields=id,email,first_name,last_name'))->execute();
 		$response = $request->getGraphObject();
 
 		$user = new User;
